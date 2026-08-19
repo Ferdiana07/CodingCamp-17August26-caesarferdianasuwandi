@@ -1,0 +1,198 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Expense &amp; Budget Visualizer</title>
+    <link rel="stylesheet" href="css/styles.css" />
+  </head>
+
+  <body>
+    <!-- ============================================================
+         HEADER — app title + theme toggle
+    ============================================================ -->
+    <header class="site-header">
+      <h1 class="site-title">Expense &amp; Budget Visualizer</h1>
+      <button
+        id="theme-toggle"
+        class="btn btn--icon"
+        type="button"
+        aria-label="Switch to dark mode"
+      >
+        🌙 Dark Mode
+      </button>
+    </header>
+
+    <!-- ============================================================
+         MAIN CONTENT
+    ============================================================ -->
+    <main class="site-main">
+
+      <!-- ── 1. Total Balance ──────────────────────────────────── -->
+      <section class="card card--balance" aria-labelledby="balance-heading">
+        <h2 id="balance-heading" class="card__heading">Total Spending</h2>
+        <p class="balance-display">
+          <span id="total-balance" class="balance-amount">$0.00</span>
+        </p>
+      </section>
+
+      <!-- ── 2. Warning Banner (hidden until triggered by JS) ──── -->
+      <div
+        id="budget-warning"
+        class="warning-banner"
+        role="alert"
+        hidden
+      ></div>
+
+      <!-- ── 3. Budget Cap ─────────────────────────────────────── -->
+      <section class="card" aria-labelledby="budget-heading">
+        <h2 id="budget-heading" class="card__heading">Budget Cap</h2>
+        <div class="field-group">
+          <label class="field-label" for="budget-cap-input">
+            Set overall spending limit ($)
+          </label>
+          <div class="input-row">
+            <input
+              id="budget-cap-input"
+              class="field-input"
+              type="number"
+              min="0.01"
+              step="0.01"
+              placeholder="e.g. 500"
+            />
+            <button
+              id="btn-save-budget"
+              class="btn btn--primary"
+              type="button"
+            >
+              Save Budget
+            </button>
+          </div>
+          <span id="error-budget" class="field-error" hidden></span>
+        </div>
+      </section>
+
+      <!-- ── 4. Two-column grid: Input Form + Chart ────────────── -->
+      <div class="grid-container">
+
+        <!-- 4a. Input Form -->
+        <section class="card" aria-labelledby="form-heading">
+          <h2 id="form-heading" class="card__heading">Add Expense</h2>
+
+          <form id="expense-form" class="expense-form" novalidate>
+
+            <!-- Item Name -->
+            <div class="field-group">
+              <label class="field-label" for="input-name">Item Name</label>
+              <input
+                id="input-name"
+                class="field-input"
+                type="text"
+                maxlength="100"
+                autocomplete="off"
+                placeholder="e.g. Coffee"
+              />
+              <span id="error-name" class="field-error" hidden></span>
+            </div>
+
+            <!-- Amount -->
+            <div class="field-group">
+              <label class="field-label" for="input-amount">Amount ($)</label>
+              <input
+                id="input-amount"
+                class="field-input"
+                type="number"
+                min="0.01"
+                step="0.01"
+                placeholder="e.g. 12.50"
+              />
+              <span id="error-amount" class="field-error" hidden></span>
+            </div>
+
+            <!-- Category -->
+            <div class="field-group">
+              <label class="field-label" for="input-category">Category</label>
+              <select id="input-category" class="field-input">
+                <option value="">Select a category</option>
+                <option value="Food">Food</option>
+                <option value="Transport">Transport</option>
+                <option value="Fun">Fun</option>
+              </select>
+              <span id="error-category" class="field-error" hidden></span>
+            </div>
+
+            <button
+              type="submit"
+              class="btn btn--primary btn--full"
+              aria-label="Add expense"
+            >
+              Add Expense
+            </button>
+
+          </form>
+        </section>
+
+        <!-- 4b. Pie Chart -->
+        <section class="card" aria-labelledby="chart-heading">
+          <h2 id="chart-heading" class="card__heading">Spending by Category</h2>
+          <div class="chart-wrapper">
+            <canvas
+              id="expense-chart"
+              role="img"
+              aria-label="Pie chart showing spending by category"
+            ></canvas>
+            <p id="chart-fallback" class="chart-fallback" hidden></p>
+          </div>
+        </section>
+
+      </div><!-- /.grid-container -->
+
+      <!-- ── 5. Sort Controls ──────────────────────────────────── -->
+      <section class="card" aria-labelledby="sort-heading">
+        <h2 id="sort-heading" class="card__heading">Sort Transactions</h2>
+        <div class="sort-controls">
+          <div class="field-group field-group--inline">
+            <label class="field-label" for="sort-criterion">Sort by</label>
+            <select id="sort-criterion" class="field-input field-input--compact">
+              <option value="category">Category</option>
+              <option value="amount">Amount</option>
+            </select>
+          </div>
+          <div class="field-group field-group--inline">
+            <label class="field-label" for="sort-order">Order</label>
+            <select id="sort-order" class="field-input field-input--compact">
+              <option value="ascending">Ascending</option>
+              <option value="descending">Descending</option>
+            </select>
+          </div>
+        </div>
+      </section>
+
+      <!-- ── 6. Transaction List ───────────────────────────────── -->
+      <section class="card" aria-labelledby="list-heading">
+        <h2 id="list-heading" class="card__heading">Transactions</h2>
+        <ul id="transaction-list" class="transaction-list" role="list"></ul>
+      </section>
+
+      <!-- ── 7. Storage Error (non-blocking, hidden until needed) ─ -->
+      <p id="storage-error" class="storage-error" role="status" hidden></p>
+
+    </main><!-- /.site-main -->
+
+    <!-- ============================================================
+         FOOTER
+    ============================================================ -->
+    <footer class="site-footer">
+      <p class="footer-text">
+        &copy; <span id="footer-year"></span> Expense &amp; Budget Visualizer
+      </p>
+    </footer>
+
+    <!-- ============================================================
+         SCRIPTS — Chart.js CDN first, then app.js
+    ============================================================ -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+    <script src="js/app.js"></script>
+
+  </body>
+</html>
